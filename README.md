@@ -1,3 +1,6 @@
+Original Templete README
+========================
+
 This is the template for assignment 1 of UCLA CS 174A, taught by professor
 Demetri Terzoupolos.
 
