@@ -4,25 +4,28 @@
 // CS 174A 
 ////////////////////////////////////////////////////
 
-#ifdef WIN32
-#include <windows.h>
-#include "GL/glew.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
-#else
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 
 #ifdef WIN32
+#include <windows.h>
+#include "GL/glew.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "GL/freeglut.h"
-#else
+#elif __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
 #include <GLUT/glut.h>
+#define glutInitContextVersion(a,b)
+#define glutInitContextProfile(a)
+#define glewExperimental int glewExperimentalAPPLE
+#define glewInit()
+#else
+#include <GL/glew.h>
+#include <GL/glut.h>
 #endif
 
 #include "Ball.h"
@@ -32,13 +35,6 @@
 #include "tga.h"
 
 #include "Angel/Angel.h"
-
-#ifdef __APPLE__
-#define glutInitContextVersion(a,b)
-#define glutInitContextProfile(a)
-#define glewExperimental int glewExperimentalAPPLE
-#define glewInit()
-#endif
 
 FrameSaver FrSaver ;
 Timer TM ;

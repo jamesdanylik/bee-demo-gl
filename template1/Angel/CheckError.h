@@ -12,7 +12,7 @@
 #ifdef WIN32
 #include <GL/gl.h>
 #else
-#include <OpenGL/gl.h>
+#include <GL/gl.h>
 #endif
 
 //----------------------------------------------------------------------------
