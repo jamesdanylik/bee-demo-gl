@@ -299,6 +299,19 @@ void set_colour(float r, float g, float b)
     glUniform4f(uSpecular, specular*r, specular*g, specular*b, 1.0f);
 }
 
+void drawGround(mat4 view_trans){
+    mat4 model_trans(1.0f);
+    //model a ground
+    set_colour(0.0f, 0.8f, 0.0f);
+    model_trans *= Translate(0, -10, 0);
+    model_trans *= Scale(100, 1, 100);
+    model_view = view_trans * model_trans;
+    drawCube();
+    
+    model_trans = mvstack.pop();//pop
+
+}
+
 /*********************************************************
 **********************************************************
 **********************************************************
@@ -320,9 +333,10 @@ void display(void)
     // Clear the screen with the background colour (set in myinit)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    model_view = mat4(1.0f);
-    
-    model_view *= Translate(0.0f, 0.0f, -15.0f);
+    mat4 model_trans(1.0f);
+    mat4 view_trans(1.0f);
+
+    view_trans *= Translate(0.0f, 0.0f, -15.0f);
     HMatrix r;
     Ball_Value(Arcball,r);
 
@@ -331,35 +345,43 @@ void display(void)
         r[1][0], r[1][1], r[1][2], r[1][3],
         r[2][0], r[2][1], r[2][2], r[2][3],
         r[3][0], r[3][1], r[3][2], r[3][3]);
-    model_view *= mat_arcball_rot;
+    view_trans *= mat_arcball_rot;
+    view_trans *= Scale(Zoom);
         
     glUniformMatrix4fv( uView, 1, GL_TRUE, model_view );
 
-    // Previously glScalef(Zoom, Zoom, Zoom);
-    model_view *= Scale(Zoom);
+    mvstack.push(model_trans);//push
 
-    // Draw Something
-    set_colour(0.8f, 0.8f, 0.8f);
+    drawGround(view_trans);
+    
+    //model sun
+    mvstack.push(model_trans);//push
+    set_colour(0.8f, 0.0f, 0.0f);
+    model_trans *= Scale(1.0);
+    model_view = view_trans * model_trans;
     drawSphere();
-
-    // Previously glTranslatef(3,0,0);
-    model_view *= Translate(3.0f, 0.0f, 0.0f);
-
-    // Previously glScalef(3,3,3);
-    model_view *= Scale(3.0f, 3.0f, 3.0f);
-
-    set_colour(0.8f, 0.0f, 0.8f);
+    model_trans = mvstack.pop();//pop
+    
+    //model earth
+    model_trans *= RotateY(20.0*TIME);
+    model_trans *= Translate(5.0f, 0.0f, 0.0f);
+    mvstack.push(model_trans);
+    model_trans *= RotateY(0.0*TIME);//self rotation of earth
+    set_colour(0.0f, 0.0f, 0.8f);
+    model_view = view_trans * model_trans;
     drawCube();
-
-    model_view *= Scale(1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f);
-    model_view *= Translate(3.0f, 0.0f, 0.0f);
-    set_colour(0.0f, 1.0f, 0.0f);
-    drawCone();
-
-    model_view *= Translate(-9.0f, 0.0f, 0.0f);
-    set_colour(1.0f, 1.0f, 0.0f);
+    
+    model_trans = mvstack.pop();
+    
+    //model moon
+    set_colour(0.8f, 0.0f, 0.8f);
+    model_trans *= RotateY(60.0*TIME);
+    model_trans *= Translate(1.0f, 0.0f, 0.0f);
+    model_trans *= Scale(0.2);
+    model_view = view_trans * model_trans;
     drawCylinder();
-
+    
+    
     glutSwapBuffers();
     if(Recording == 1)
         FrSaver.DumpPPM(Width, Height);

@@ -17,3 +17,6 @@ $(EXECUTABLE): $(OBJECTS)
 
 clean: 
 	rm -f $(OBJECTS) $(EXECUTABLE)
+
+run: $(EXECUTABLE)
+	./$(EXECUTABLE) $(ARGS)
