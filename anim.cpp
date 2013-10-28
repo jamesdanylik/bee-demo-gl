@@ -233,6 +233,7 @@ void myKey(unsigned char key, int x, int y)
             instructions();
             break;
     }
+    (void) time;
     glutPostRedisplay() ;
 
 }
@@ -353,6 +354,37 @@ void display(void)
     mvstack.push(model_trans);//push
 
     drawGround(view_trans);
+
+    //model trunk?
+    mvstack.push(model_trans);
+    set_colour(0.5f, 0.25f, 0.1f);    
+    model_trans *= RotateX(45.0*sin(TIME));
+    model_trans *= Translate(7.0f, 1.0f, 0.0f);
+    model_trans *= RotateX(90.0);
+    model_trans *= Scale(0.1f, 0.1f, 1.0f);
+    model_view = view_trans * model_trans;
+    drawCylinder();
+    model_trans *= Scale(10.0, 10.0, 1.0);
+    model_trans *= Translate(0.0, 0.0, -1.0);
+    model_trans *= RotateX(45.0*sin(TIME));
+    model_trans *= Translate(0.0, 0.0, -1.0);
+    model_trans *= Scale(0.1f, 0.1f, 1.0f);
+    model_view = view_trans * model_trans;
+    drawCylinder();
+    model_trans *= Scale(10.0, 10.0, 1.0);
+    model_trans *= Translate(0.0, 0.0, -1.0);
+    model_trans *= RotateX(45.0*sin(TIME));
+    model_trans *= Translate(0.0, 0.0, -1.0);
+    model_trans *= Scale(0.1f, 0.1f, 1.0f);
+    model_view = view_trans * model_trans;
+    drawCylinder();
+    set_colour(0.8f, 0.0f, 0.0f);
+    model_trans *= Scale(10.0, 10.0, 1.0);
+    model_trans *= Translate(0.0, 0.0, -1.0);
+    model_trans *= Scale(1.0);
+    model_view = view_trans * model_trans;
+    drawSphere();
+    model_trans = mvstack.pop();
     
     //model sun
     mvstack.push(model_trans);//push
@@ -369,8 +401,7 @@ void display(void)
     model_trans *= RotateY(0.0*TIME);//self rotation of earth
     set_colour(0.0f, 0.0f, 0.8f);
     model_view = view_trans * model_trans;
-    drawCube();
-    
+    drawCube(); 
     model_trans = mvstack.pop();
     
     //model moon
@@ -503,6 +534,7 @@ int main(int argc, char** argv)
     glutInitWindowPosition (0, 0);
     glutInitWindowSize(Width,Height);
     glutCreateWindow(argv[0]);
+    glutSetWindowTitle("OpenGL Bee Demo");
     printf("GL version %s\n", glGetString(GL_VERSION));
     glewExperimental = GL_TRUE;
     glewInit();
