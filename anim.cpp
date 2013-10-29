@@ -300,16 +300,115 @@ void set_colour(float r, float g, float b)
     glUniform4f(uSpecular, specular*r, specular*g, specular*b, 1.0f);
 }
 
-void drawGround(mat4 view_trans){
-    mat4 model_trans(1.0f);
-    //model a ground
+void drawGround(mat4 model_trans, mat4 view_trans){
+    mvstack.push(model_trans);
+
     set_colour(0.0f, 0.8f, 0.0f);
     model_trans *= Translate(0, -10, 0);
     model_trans *= Scale(100, 1, 100);
     model_view = view_trans * model_trans;
     drawCube();
     
-    model_trans = mvstack.pop();//pop
+    model_trans = mvstack.pop();
+}
+
+const float stem_width  = 0.1f;
+const float stem_height = 0.5f;
+
+
+void drawBulb(mat4 model_trans, mat4 view_trans) {
+    const float fR = 0.125f;
+    const float fG = 0.69f;
+    const float fB = 0.66f;
+
+    set_colour(fR, fG, fB);
+
+    model_trans *= Scale(1/stem_width, 1/stem_width, 1/stem_height);
+    model_trans *= Translate(0.0, 0.0, -stem_height);
+    model_trans *= Scale(1.0);
+    model_view = view_trans * model_trans;
+    drawSphere();
+}
+
+void drawStemSegments(mat4 model_trans, mat4 view_trans, size_t num_segments){
+    float swayAngle = 4.0*sin(TIME);
+
+    model_trans *= Scale(1/stem_width, 1/stem_width, 1/stem_height);
+    model_trans *= Translate(0.0, 0.0, -stem_height);
+    model_trans *= RotateX(swayAngle);
+    model_trans *= Translate(0.0, 0.0, -stem_height);
+    model_trans *= Scale(stem_width, stem_width, stem_height);
+    model_view = view_trans * model_trans;
+    drawCylinder();
+
+    if ( num_segments > 1 )
+      drawStemSegments(model_trans, view_trans, num_segments-1);
+    else
+      drawBulb(model_trans, view_trans);
+}
+
+void drawStem(mat4 model_trans, mat4 view_trans, size_t num_segments){
+    const float sR = 0.5f;
+    const float sG = 0.25f;
+    const float sB = 0.1f;
+    float swayAngle = 4.0*sin(TIME); 
+
+
+    set_colour(sR, sG, sB);
+    // draw root
+    model_trans *= Translate(0.0f, -9.0f, 0.0f);
+    model_trans *= RotateX(swayAngle);
+    model_trans *= Translate(0.0f, stem_height, 0.0f);
+    model_trans *= RotateX(90.0);
+    model_trans *= Scale(stem_width, stem_width, stem_height);
+    model_view = view_trans * model_trans;
+    drawCylinder();
+ 
+    // draw the rest of the segments
+    drawStemSegments(model_trans, view_trans, num_segments-1);
+}
+
+void drawFlower(mat4 model_trans, mat4 view_trans){
+    const size_t num_segments = 8;
+
+    mvstack.push(model_trans);
+    drawStem(model_trans, view_trans, num_segments);
+    model_trans = mvstack.pop();
+}
+
+void drawLeg(mat4 model_trans, mat4 view_trans){
+    
+}
+
+void drawBee(mat4 model_trans, mat4 view_trans){
+    const float bee_speed = 20.0f;
+    const float bee_radius = 5.0f;
+    float bee_height =  0.75f * sin(TIME);
+
+    const float aR = 0.1f;
+    const float aG = 0.1f;
+    const float aB = 0.1f;
+    const float body_width = 1.0f;
+    const float body_length = 2.0f;
+   
+    //const float hR = 0.01f;
+    //const float hG = 0.01f;
+    //const float hB = 0.71f;
+
+    mvstack.push(model_trans);
+
+    //draw abdomen
+    set_colour(aR, aG, aB);
+    model_trans *= RotateY(bee_speed*TIME);
+    model_trans *= Translate(bee_radius, bee_height, 0.0f);
+    model_trans *= Scale(body_width, body_width, body_length);
+    model_view = view_trans * model_trans;
+    drawCube();
+
+    //draw head
+    //set_colour(hR, rG, hB);
+    model_trans = mvstack.pop();
+
 
 }
 
@@ -351,52 +450,14 @@ void display(void)
         
     glUniformMatrix4fv( uView, 1, GL_TRUE, model_view );
 
-    mvstack.push(model_trans);//push
+    drawGround(model_trans, view_trans);
 
-    drawGround(view_trans);
-
-    //model trunk?
-    mvstack.push(model_trans);
-    set_colour(0.5f, 0.25f, 0.1f);    
-    model_trans *= RotateX(45.0*sin(TIME));
-    model_trans *= Translate(7.0f, 1.0f, 0.0f);
-    model_trans *= RotateX(90.0);
-    model_trans *= Scale(0.1f, 0.1f, 1.0f);
-    model_view = view_trans * model_trans;
-    drawCylinder();
-    model_trans *= Scale(10.0, 10.0, 1.0);
-    model_trans *= Translate(0.0, 0.0, -1.0);
-    model_trans *= RotateX(45.0*sin(TIME));
-    model_trans *= Translate(0.0, 0.0, -1.0);
-    model_trans *= Scale(0.1f, 0.1f, 1.0f);
-    model_view = view_trans * model_trans;
-    drawCylinder();
-    model_trans *= Scale(10.0, 10.0, 1.0);
-    model_trans *= Translate(0.0, 0.0, -1.0);
-    model_trans *= RotateX(45.0*sin(TIME));
-    model_trans *= Translate(0.0, 0.0, -1.0);
-    model_trans *= Scale(0.1f, 0.1f, 1.0f);
-    model_view = view_trans * model_trans;
-    drawCylinder();
-    set_colour(0.8f, 0.0f, 0.0f);
-    model_trans *= Scale(10.0, 10.0, 1.0);
-    model_trans *= Translate(0.0, 0.0, -1.0);
-    model_trans *= Scale(1.0);
-    model_view = view_trans * model_trans;
-    drawSphere();
-    model_trans = mvstack.pop();
-    
-    //model sun
-    mvstack.push(model_trans);//push
-    set_colour(0.8f, 0.0f, 0.0f);
-    model_trans *= Scale(1.0);
-    model_view = view_trans * model_trans;
-    drawSphere();
-    model_trans = mvstack.pop();//pop
-    
+    drawFlower(model_trans, view_trans);   
+ 
+    drawBee(model_trans, view_trans);
     //model earth
     model_trans *= RotateY(20.0*TIME);
-    model_trans *= Translate(5.0f, 0.0f, 0.0f);
+    model_trans *= Translate(8.0f, 0.0f, 0.0f);
     mvstack.push(model_trans);
     model_trans *= RotateY(0.0*TIME);//self rotation of earth
     set_colour(0.0f, 0.0f, 0.8f);
