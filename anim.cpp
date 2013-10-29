@@ -304,10 +304,11 @@ void drawGround(mat4 model_trans, mat4 view_trans){
     mvstack.push(model_trans);
 
     set_colour(0.0f, 0.8f, 0.0f);
-    model_trans *= Translate(0, -10, 0);
-    model_trans *= Scale(100, 1, 100);
+    model_trans *= RotateX(90.0);
+    model_trans *= Translate(0, 0, 10);
+    model_trans *= Scale(100, 100, 1);
     model_view = view_trans * model_trans;
-    drawCube();
+    drawCylinder();
     
     model_trans = mvstack.pop();
 }
@@ -316,65 +317,65 @@ const float stem_width  = 0.1f;
 const float stem_height = 0.5f;
 
 
-void drawBulb(mat4 model_trans, mat4 view_trans) {
-    const float fR = 0.125f;
-    const float fG = 0.69f;
-    const float fB = 0.66f;
+void drawBulb(mat4 model_trans, mat4 view_trans, int variation) {
+    const float fR = 0.125f+0.1*variation;
+    const float fG = 0.69f-0.1*variation;
+    const float fB = 0.66f+0.1*variation;
 
     set_colour(fR, fG, fB);
 
-    model_trans *= Scale(1/stem_width, 1/stem_width, 1/stem_height);
-    model_trans *= Translate(0.0, 0.0, -stem_height);
-    model_trans *= Scale(1.0);
+    model_trans *= Scale(1/stem_width, 1/stem_width, 1/(stem_height+0.05*variation));
+    model_trans *= Translate(0.0, 0.0, -(stem_height+0.05*variation));
+    model_trans *= Scale(1.0+0.05*variation);
     model_view = view_trans * model_trans;
     drawSphere();
 }
 
-void drawStemSegments(mat4 model_trans, mat4 view_trans, size_t num_segments){
+void drawStemSegments(mat4 model_trans, mat4 view_trans, size_t num_segments, int variation){
     float swayAngle = 4.0*sin(TIME);
 
-    model_trans *= Scale(1/stem_width, 1/stem_width, 1/stem_height);
-    model_trans *= Translate(0.0, 0.0, -stem_height);
+    model_trans *= Scale(1/stem_width, 1/stem_width, 1/(stem_height+0.05*variation));
+    model_trans *= Translate(0.0, 0.0, -(stem_height+0.05*variation));
     model_trans *= RotateX(swayAngle);
-    model_trans *= Translate(0.0, 0.0, -stem_height);
-    model_trans *= Scale(stem_width, stem_width, stem_height);
+    model_trans *= Translate(0.0, 0.0, -(stem_height+0.05*variation));
+    model_trans *= Scale(stem_width, stem_width, stem_height+0.05*variation);
     model_view = view_trans * model_trans;
     drawCylinder();
 
     if ( num_segments > 1 )
-      drawStemSegments(model_trans, view_trans, num_segments-1);
+      drawStemSegments(model_trans, view_trans, num_segments-1, variation);
     else
-      drawBulb(model_trans, view_trans);
+      drawBulb(model_trans, view_trans, variation);
 }
 
-void drawStem(mat4 model_trans, mat4 view_trans, size_t num_segments){
-    const float sR = 0.5f;
-    const float sG = 0.25f;
-    const float sB = 0.1f;
-    float swayAngle = 4.0*sin(TIME); 
+void drawStem(mat4 model_trans, mat4 view_trans, size_t num_segments, int variation, float x, float y){
+    const float sR = 0.5f+0.01*variation;
+    const float sG = 0.25f+0.01*variation;
+    const float sB = 0.1f+0.01*variation;
+    float swayAngle = 4.0*sin(TIME+variation); 
 
 
     set_colour(sR, sG, sB);
     // draw root
-    model_trans *= Translate(0.0f, -9.5f, 0.0f);
+    model_trans *= Translate(x, -9.5f, y);
     model_trans *= RotateX(swayAngle);
-    model_trans *= Translate(0.0f, stem_height, 0.0f);
+    model_trans *= Translate(0.0f, stem_height+0.05*variation, 0.0f);
     model_trans *= RotateX(90.0);
-    model_trans *= Scale(stem_width, stem_width, stem_height);
+    model_trans *= Scale(stem_width, stem_width, stem_height+0.05*variation);
     model_view = view_trans * model_trans;
     drawCylinder();
  
     // draw the rest of the segments
-    drawStemSegments(model_trans, view_trans, num_segments-1);
+    drawStemSegments(model_trans, view_trans, num_segments-1, variation);
 }
 
 
 
-void drawFlower(mat4 model_trans, mat4 view_trans){
+void drawFlower(mat4 model_trans, mat4 view_trans, int variation, float x, float y){
     const size_t num_segments = 8;
 
     mvstack.push(model_trans);
-    drawStem(model_trans, view_trans, num_segments);
+    drawStem(model_trans, view_trans, num_segments, variation, x, y);
     model_trans = mvstack.pop();
 }
 
@@ -395,10 +396,11 @@ void drawWing(mat4 model_trans, mat4 view_trans){
     const float wR = 0.2f;
     const float wG = 0.2f;
     const float wB = 0.2f;
+    const float wing_speed = 150.0f;
 
     set_colour(wR, wG, wB);
     model_trans *= Translate(thorax_width/2, 0.0f, 0.0f);
-    model_trans *= RotateZ(wing_distance * sin(TIME));
+    model_trans *= RotateZ(wing_distance * sin(TIME*wing_speed));
     model_trans *= Translate(wing_length/2, 0.0f, 0.0f);
     model_trans *= Scale(wing_length, wing_thickness, wing_width);
     model_view = view_trans * model_trans;
@@ -431,9 +433,9 @@ void drawLeg(mat4 model_trans, mat4 view_trans){
 }
 
 void drawBee(mat4 model_trans, mat4 view_trans){
-    const float bee_speed = 20.0f;
-    const float bee_radius = 5.0f;
-    float bee_height =  0.75f * sin(TIME);
+    const float bee_speed = 50.0f;
+    const float bee_radius = 7.0f;
+    float bee_height =  1.5f * sin(TIME);
 
     const float tR = 0.2f;
     const float tG = 0.2f;
@@ -473,23 +475,19 @@ void drawBee(mat4 model_trans, mat4 view_trans){
     model_view = view_trans * model_trans;
     drawSphere();
 
-    //draw leg
+    //draw legs
     model_trans *= Scale(1/abdomen_radius, 1/abdomen_radius, 1/abdomen_length);
     model_trans *= Translate(0.0f, 0.0f, -abdomen_length);
 
     size_t num_legs = 6;
     size_t total_legs = num_legs;
-    while ( num_legs > total_legs/2 )
-    {
-        model_trans *= Translate(0.0f, 0.0f, -2*(abdomen_length/total_legs));
-        drawLeg(model_trans, view_trans);
-        num_legs--;
-    }
-    model_trans *= RotateY(180.0);
-    model_trans *= Translate(0.0f, 0.0f, 2*(abdomen_length/total_legs));
-
     while ( num_legs > 0 )
     {
+        if ( num_legs == total_legs/2 )
+        {
+          model_trans *= RotateY(180.0);
+          model_trans *= Translate(0.0f, 0.0f, 2*(abdomen_length/total_legs));
+        }
         model_trans *= Translate(0.0f, 0.0f, -2*(abdomen_length/total_legs));
         drawLeg(model_trans, view_trans);
         num_legs--;
@@ -497,9 +495,9 @@ void drawBee(mat4 model_trans, mat4 view_trans){
 
     model_trans *= Translate(0.0f, 0.0f, ( abdomen_length/2 - abdomen_length/total_legs) );
     drawWing(model_trans, view_trans);
-
     model_trans *= RotateY(180.0);
     drawWing(model_trans, view_trans);
+  
     model_trans = mvstack.pop();
 
 
@@ -545,27 +543,34 @@ void display(void)
 
     drawGround(model_trans, view_trans);
 
-    drawFlower(model_trans, view_trans);   
+    // main flower
+    drawFlower(model_trans, view_trans, 0, 0, 0); 
+
+    // lower grove
+    drawFlower(model_trans, view_trans, -10, 4, 3);
+    drawFlower(model_trans, view_trans, -7, -4, -3);
+    drawFlower(model_trans, view_trans, -5, -7, 3);
+    drawFlower(model_trans, view_trans, -4, 7, -3);
+    drawFlower(model_trans, view_trans, -2, 5, -5);
+
+
+    //far grove    
+    drawFlower(model_trans, view_trans, 10, 13, 4);
+    drawFlower(model_trans, view_trans, 5, 12, -12);
+    drawFlower(model_trans, view_trans, 0, -13, 0);
+    drawFlower(model_trans, view_trans, 10, -15, 4);
+    drawFlower(model_trans, view_trans, 12, 0, -15);
+    drawFlower(model_trans, view_trans, 11, 0, 17);
+    drawFlower(model_trans, view_trans, 0, 3, -19);
+    drawFlower(model_trans, view_trans, 13, 7, 20);
+    drawFlower(model_trans, view_trans, 7, 15, -20);
+    drawFlower(model_trans, view_trans, 10, 13, 13);
+    drawFlower(model_trans, view_trans, 0, 13, -7);
+    drawFlower(model_trans, view_trans, 10, -15, -15);
+    drawFlower(model_trans, view_trans, 9, -12, -17);
+    drawFlower(model_trans, view_trans, 8, -17, -12);
  
     drawBee(model_trans, view_trans);
-    //model earth
-    model_trans *= RotateY(20.0*TIME);
-    model_trans *= Translate(8.0f, 0.0f, 0.0f);
-    mvstack.push(model_trans);
-    model_trans *= RotateY(0.0*TIME);//self rotation of earth
-    set_colour(0.0f, 0.0f, 0.8f);
-    model_view = view_trans * model_trans;
-    drawCube(); 
-    model_trans = mvstack.pop();
-    
-    //model moon
-    set_colour(0.8f, 0.0f, 0.8f);
-    model_trans *= RotateY(60.0*TIME);
-    model_trans *= Translate(1.0f, 0.0f, 0.0f);
-    model_trans *= Scale(0.2);
-    model_view = view_trans * model_trans;
-    drawCylinder();
-    
     
     glutSwapBuffers();
     if(Recording == 1)

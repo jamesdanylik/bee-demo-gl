@@ -1,3 +1,20 @@
+Implmentation Notes
+===================
+
+I decided early on to iminate the approach show in section, and creat functions much
+like drawGround to sole the problem.  I also tried to take advantage of the the nature
+of problems like the stem by using the control flow constucts of C++, like recursive
+function definitions and and object oreiented construction. I also took the specification
+one step farther, at least in the flower, by creating a factory function which could
+create and animate flowers with automatic slight variations from the main one in the spec.
+
+Insofar as I am aware, the requirement is completely fufilled and several improvements
+are present.
+ 
+Overall, I'm very proud of this code, though I was delayed slightly due
+to a nasty bug in my wing constucting function near the deadline.  Hopefully, the exta
+factory method and resulting field of flowers make up for this somewhat! 
+
 Original Templete README
 ========================
 
