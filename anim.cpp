@@ -368,6 +368,8 @@ void drawStem(mat4 model_trans, mat4 view_trans, size_t num_segments){
     drawStemSegments(model_trans, view_trans, num_segments-1);
 }
 
+
+
 void drawFlower(mat4 model_trans, mat4 view_trans){
     const size_t num_segments = 8;
 
@@ -376,8 +378,35 @@ void drawFlower(mat4 model_trans, mat4 view_trans){
     model_trans = mvstack.pop();
 }
 
+const float abdomen_radius = 0.5f;
+const float abdomen_length = 1.5f;
+const float head_radius = 0.5f;
+const float thorax_width = 1.0f;
+const float thorax_length = 2.0f;
+const float leg_width = 0.25f;
+const float leg_length = 0.5f;
+const float flex_distance = 5.0f;
+
+
 void drawLeg(mat4 model_trans, mat4 view_trans){
+    const float lR = 0.2f;
+    const float lG = 0.2f;
+    const float lB = 0.2f;
     
+    set_colour(lR, lG, lB);
+    model_trans *= RotateZ(flex_distance * sin(TIME) - flex_distance/2);
+    model_trans *= Translate(thorax_width/2, -(thorax_width/2+leg_length/2), 0.0f);
+    model_trans *= Scale(leg_width, leg_length, leg_width);
+    model_view = view_trans * model_trans;
+    drawCube();
+   
+    model_trans *= Scale(1/leg_width, 1/leg_length, 1/leg_width);
+ 
+    model_trans *=RotateZ(flex_distance * sin(TIME) - flex_distance/2);
+    model_trans *= Translate(0.0f, -leg_length, 0.0f);
+    model_trans *= Scale(leg_width, leg_length, leg_width);
+    model_view = view_trans * model_trans;
+    drawCube();
 }
 
 void drawBee(mat4 model_trans, mat4 view_trans){
@@ -385,28 +414,66 @@ void drawBee(mat4 model_trans, mat4 view_trans){
     const float bee_radius = 5.0f;
     float bee_height =  0.75f * sin(TIME);
 
-    const float aR = 0.1f;
-    const float aG = 0.1f;
-    const float aB = 0.1f;
-    const float body_width = 1.0f;
-    const float body_length = 2.0f;
+    const float tR = 0.2f;
+    const float tG = 0.2f;
+    const float tB = 0.2f;
    
-    //const float hR = 0.01f;
-    //const float hG = 0.01f;
-    //const float hB = 0.71f;
+    const float hR = 0.01f;
+    const float hG = 0.01f;
+    const float hB = 0.71f;
+
+    const float aR = 1.0f;
+    const float aG = 0.9f;
+    const float aB = 0.0f;
 
     mvstack.push(model_trans);
 
     //draw abdomen
-    set_colour(aR, aG, aB);
+    set_colour(tR, tG, tB);
     model_trans *= RotateY(bee_speed*TIME);
     model_trans *= Translate(bee_radius, bee_height, 0.0f);
-    model_trans *= Scale(body_width, body_width, body_length);
+    model_trans *= Scale(thorax_width, thorax_width, thorax_length);
     model_view = view_trans * model_trans;
     drawCube();
 
     //draw head
-    //set_colour(hR, rG, hB);
+    set_colour(hR, hG, hB);
+    model_trans *= Scale(1/thorax_width, 1/thorax_width, 1/thorax_length);
+    model_trans *= Translate(0.0f, 0.0f, -(thorax_length/2+head_radius));
+    model_trans *= Scale(head_radius);
+    model_view = view_trans * model_trans;
+    drawSphere();
+
+    //draw thorax
+    set_colour(aR, aG, aB);
+    model_trans *= Scale(1/head_radius);
+    model_trans *= Translate(0.0f, 0.0f, (thorax_length+head_radius+abdomen_length));
+    model_trans *= Scale(abdomen_radius, abdomen_radius, abdomen_length);
+    model_view = view_trans * model_trans;
+    drawSphere();
+
+    //draw leg
+    model_trans *= Scale(1/abdomen_radius, 1/abdomen_radius, 1/abdomen_length);
+    model_trans *= Translate(0.0f, 0.0f, -abdomen_length);
+
+    size_t num_legs = 6;
+    size_t total_legs = num_legs;
+    while ( num_legs > total_legs/2 )
+    {
+        model_trans *= Translate(0.0f, 0.0f, -2*(abdomen_length/total_legs));
+        drawLeg(model_trans, view_trans);
+        num_legs--;
+    }
+    model_trans *= RotateY(180.0);
+    model_trans *= Translate(0.0f, 0.0f, 2*(abdomen_length/total_legs));
+
+    while ( num_legs > 0 )
+    {
+        model_trans *= Translate(0.0f, 0.0f, -2*(abdomen_length/total_legs));
+        drawLeg(model_trans, view_trans);
+        num_legs--;
+    }
+
     model_trans = mvstack.pop();
 
 
