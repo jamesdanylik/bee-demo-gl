@@ -356,7 +356,7 @@ void drawStem(mat4 model_trans, mat4 view_trans, size_t num_segments){
 
     set_colour(sR, sG, sB);
     // draw root
-    model_trans *= Translate(0.0f, -9.0f, 0.0f);
+    model_trans *= Translate(0.0f, -9.5f, 0.0f);
     model_trans *= RotateX(swayAngle);
     model_trans *= Translate(0.0f, stem_height, 0.0f);
     model_trans *= RotateX(90.0);
@@ -385,8 +385,25 @@ const float thorax_width = 1.0f;
 const float thorax_length = 2.0f;
 const float leg_width = 0.25f;
 const float leg_length = 0.5f;
-const float flex_distance = 5.0f;
+const float leg_distance = 5.0f;
+const float wing_thickness = 0.05f;
+const float wing_width = 1.0f;
+const float wing_length = 3.0f;
+const float wing_distance = 15.0f;
 
+void drawWing(mat4 model_trans, mat4 view_trans){
+    const float wR = 0.2f;
+    const float wG = 0.2f;
+    const float wB = 0.2f;
+
+    set_colour(wR, wG, wB);
+    model_trans *= Translate(thorax_width/2, 0.0f, 0.0f);
+    model_trans *= RotateZ(wing_distance * sin(TIME));
+    model_trans *= Translate(wing_length/2, 0.0f, 0.0f);
+    model_trans *= Scale(wing_length, wing_thickness, wing_width);
+    model_view = view_trans * model_trans;
+    drawCube();
+}
 
 void drawLeg(mat4 model_trans, mat4 view_trans){
     const float lR = 0.2f;
@@ -394,19 +411,23 @@ void drawLeg(mat4 model_trans, mat4 view_trans){
     const float lB = 0.2f;
     
     set_colour(lR, lG, lB);
-    model_trans *= RotateZ(flex_distance * sin(TIME) - flex_distance/2);
-    model_trans *= Translate(thorax_width/2, -(thorax_width/2+leg_length/2), 0.0f);
+    model_trans *= Translate(thorax_width/2, 0.0f, 0.0f);
+    model_trans *= RotateZ(leg_distance * sin(TIME) - leg_distance/2);
+    model_trans *= Translate(0.0f, -(thorax_width/2+leg_length/2), 0.0f);
     model_trans *= Scale(leg_width, leg_length, leg_width);
     model_view = view_trans * model_trans;
     drawCube();
    
     model_trans *= Scale(1/leg_width, 1/leg_length, 1/leg_width);
  
-    model_trans *=RotateZ(flex_distance * sin(TIME) - flex_distance/2);
+    model_trans *=RotateZ(leg_distance * sin(TIME) - leg_distance/2);
     model_trans *= Translate(0.0f, -leg_length, 0.0f);
     model_trans *= Scale(leg_width, leg_length, leg_width);
     model_view = view_trans * model_trans;
     drawCube();
+
+    model_trans *= Scale(1/leg_width, 1/leg_length, 1/leg_width);
+
 }
 
 void drawBee(mat4 model_trans, mat4 view_trans){
@@ -474,6 +495,11 @@ void drawBee(mat4 model_trans, mat4 view_trans){
         num_legs--;
     }
 
+    model_trans *= Translate(0.0f, 0.0f, ( abdomen_length/2 - abdomen_length/total_legs) );
+    drawWing(model_trans, view_trans);
+
+    model_trans *= RotateY(180.0);
+    drawWing(model_trans, view_trans);
     model_trans = mvstack.pop();
 
 
